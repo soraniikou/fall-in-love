@@ -311,7 +311,7 @@ function makeParticle(x, y, stage) {
   }
   if (stage === 6) {
     return { ...base, type:'feather',
-      vx:(Math.random()-0.5)*1.5, vy:-0.3-Math.random()*1.5,
+      vx:(Math.random()-0.5)*1.5, vy:-0.15-Math.random()*0.75,
       color:`hsl(0,0%,${85+Math.random()*15}%)`,
       size:8+Math.random()*12, rot:Math.random()*Math.PI*2,
       rotSpeed:(Math.random()-0.5)*0.03, decay:0.004+Math.random()*0.006 };
@@ -329,7 +329,7 @@ function makeParticle(x, y, stage) {
       color:`hsl(${340+Math.random()*25},85%,${50+Math.random()*20}%)`,
       size:7+Math.random()*10, rot:Math.random()*Math.PI*2,
       rotSpeed:(Math.random()-0.5)*0.03, sway:Math.random()*Math.PI*2,
-      swaySpeed:0.015+Math.random()*0.015, decay:0.004+Math.random()*0.006 };
+      swaySpeed:0.015+Math.random()*0.015, decay:0.004+Math.random()*0.005 };
   }
   if (stage === 9) {
     return { ...base, type:'petal',
@@ -337,7 +337,7 @@ function makeParticle(x, y, stage) {
       color:`hsl(${270+Math.random()*30},70%,${55+Math.random()*20}%)`,
       size:7+Math.random()*10, rot:Math.random()*Math.PI*2,
       rotSpeed:(Math.random()-0.5)*0.03, sway:Math.random()*Math.PI*2,
-      swaySpeed:0.015+Math.random()*0.015, decay:0.004+Math.random()*0.006 };
+      swaySpeed:0.015+Math.random()*0.015, decay:0.004+Math.random()*0.005 };
   }
   if (stage === 10) {
     return { ...base, type:'petal',
@@ -655,7 +655,7 @@ function showSecretMsg() {
     i++;
   }, 100);
 
-  setTimeout(() => { el.classList.remove('show'); }, 4500);
+  setTimeout(() => { el.classList.remove('show'); }, 14000);
 }
 
 updateStageUI();

@@ -202,7 +202,7 @@
 </div>
 
 <div id="secret"><div id="secretText"></div></div>
-
+<div id="fallInLove"><span id="fallText"></span></div>
 <script>
 const STAGES = [
   { name: 'sparks',        duration: 6000 },
@@ -589,6 +589,36 @@ function advanceStage() {
 
 function updateStageUI() {
   stageIndicator.textContent = `${currentStage + 1} / ${STAGES.length}  ${STAGES[currentStage].name}`;
+  if (currentStage === 10) {
+    showFallInLove();
+  } else {
+    hideFallInLove();
+  }
+}
+
+function showFallInLove() {
+  const el = document.getElementById('fallInLove');
+  const textEl = document.getElementById('fallText');
+  el.classList.add('show');
+  textEl.innerHTML = '';
+  const chars = 'fall  in  love'.split('');
+  let i = 0;
+  const timer = setInterval(() => {
+    if (i >= chars.length) { clearInterval(timer); return; }
+    const span = document.createElement('span');
+    span.textContent = chars[i];
+    span.style.opacity = '0';
+    span.style.transition = 'opacity 0.6s ease';
+    span.style.display = 'inline-block';
+    textEl.appendChild(span);
+    setTimeout(() => { span.style.opacity = '1'; }, 30);
+    i++;
+  }, 180);
+}
+
+function hideFallInLove() {
+  const el = document.getElementById('fallInLove');
+  if (el) el.classList.remove('show');
 }
 
 function startHold() {

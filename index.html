@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Fall in  Love</title>
+<link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600&display=swap)" rel="stylesheet">
+<style>
+  :root {
+    --crimson: #c8043c;
+    --blush: #f7c5d5;
+    --dark: #0a0007;
+    --gold: #e8c97a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--dark);
+    min-height: 100vh;
+    font-family: 'Shippori Mincho', serif;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  #bgCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  #app {
+    position: relative; z-index: 10;
+    width: 100%; max-width: 400px;
+    padding: 0 32px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 36px;
+  }
+  #title {
+    font-size: 13px;
+    letter-spacing: 0.45em;
+    color: rgba(232, 201, 122, 0.55);
+    text-align: center;
+    animation: fadeUp 2s ease forwards;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+
+  #inputWrapper {
+    width: 100%; position: relative;
+    animation: fadeUp 2s 0.3s ease both;
+  }
+  #nameInput {
+    width: 100%;
+    background: transparent; border: none;
+    border-bottom: 1px solid rgba(200, 4, 60, 0.4);
+    color: rgba(247, 197, 213, 0.9);
+    font-family: 'Shippori Mincho', serif;
+    font-size: 28px; letter-spacing: 0.18em;
+    text-align: center; padding: 12px 0;
+    outline: none; caret-color: var(--crimson);
+    transition: border-color 0.4s;
+  }
+  #nameInput::placeholder { color: rgba(200, 4, 60, 0.25); font-size: 16px; letter-spacing: 0.3em; }
+  #nameInput:focus { border-bottom-color: rgba(200, 4, 60, 0.8); }
+  #inputLine {
+    position: absolute; bottom: 0; left: 50%;
+    width: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--crimson), transparent);
+    transform: translateX(-50%); transition: width 0.6s ease;
+  }
+  #inputWrapper:focus-within #inputLine { width: 100%; }
+
+  #holdGuide {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    animation: fadeUp 2s 0.5s ease both;
+  }
+  #holdGuideText {
+    font-size: 10px; letter-spacing: 0.28em;
+    color: rgba(200, 4, 60, 0.5);
+  }
+  #holdGuideArrow {
+    font-size: 16px;
+    animation: bounce 1.4s ease-in-out infinite;
+    color: rgba(200, 4, 60, 0.4);
+  }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }
+
+  #holdBtn {
+    width: 88px; height: 88px; border-radius: 50%;
+    background: transparent;
+    border: 1px solid rgba(200, 4, 60, 0.3);
+    cursor: pointer; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeUp 2s 0.7s ease both;
+    -webkit-user-select: none; user-select: none;
+    transition: border-color 0.3s;
+  }
+
+  #progressRing {
+    position: absolute; inset: -4px;
+    width: calc(100% + 8px); height: calc(100% + 8px);
+    transform: rotate(-90deg);
+    pointer-events: none;
+  }
+  #progressCircle {
+    fill: none;
+    stroke: var(--crimson);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 302;
+    stroke-dashoffset: 302;
+    transition: stroke-dashoffset 0.05s linear;
+    filter: drop-shadow(0 0 4px var(--crimson));
+  }
+
+  #holdInner {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,4,60,0.12) 0%, transparent 70%);
+    transition: all 0.3s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #holdIcon {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: rgba(200,4,60,0.55);
+    transition: all 0.3s;
+  }
+  #holdBtn.holding #holdInner {
+    background: radial-gradient(circle, rgba(200,4,60,0.35) 0%, transparent 70%);
+    transform: scale(1.15);
+  }
+  #holdBtn.holding #holdIcon {
+    background: var(--crimson);
+    box-shadow: 0 0 14px var(--crimson);
+    transform: scale(1.6);
+  }
+
+  #holdLabel {
+    font-size: 9px; letter-spacing: 0.32em;
+    color: rgba(200, 4, 60, 0.3);
+    margin-top: -28px;
+    animation: fadeUp 2s 0.9s ease both;
+  }
+
+  #effectCanvas { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
+  #secret {
+    position: fixed; inset: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none; opacity: 0; transition: opacity 1.2s ease;
+  }
+  #secret.show { opacity: 1; }
+  #secretText {
+    font-size: 13px; letter-spacing: 0.3em;
+    color: rgba(247, 197, 213, 0.85);
+    text-align: center; line-height: 2.6;
+  }
+
+  #stageIndicator {
+    position: fixed; top: 24px; right: 24px; z-index: 40;
+    font-size: 9px; letter-spacing: 0.2em;
+    color: rgba(200, 4, 60, 0.3);
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<canvas id="effectCanvas"></canvas>
+
+<div id="stageIndicator"></div>
+
+<div id="app">
+  <div id="title">— sweet trap —</div>
+
+  <div id="inputWrapper">
+    <input id="nameInput" type="text" placeholder="enter a name" maxlength="10" autocomplete="off">
+    <div id="inputLine"></div>
+  </div>
+
+  <div id="holdGuide">
+    <div id="holdGuideText">hold to begin</div>
+    <div id="holdGuideArrow">↓</div>
+  </div>
+
+  <button id="holdBtn">
+    <svg id="progressRing" viewBox="0 0 96 96">
+      <circle id="progressCircle" cx="48" cy="48" r="46"/>
+    </svg>
+    <div id="holdInner"><div id="holdIcon"></div></div>
+  </button>
+
+  <div id="holdLabel">hold</div>
+</div>
+
+<div id="secret"><div id="secretText"></div></div>
+
+<script>
+const STAGES = [
+  { name: 'sparks',        duration: 6000 },
+  { name: '💗 hearts',     duration: 6000 },
+  { name: '☔ rain',        duration: 6000 },
+  { name: '⚡ lightning',  duration: 6000 },
+  { name: '🌈 rainbow',    duration: 6000 },
+  { name: '☀️ sunlight',   duration: 6000 },
+  { name: '🪽 feathers',   duration: 6000 },
+  { name: '💎 diamonds',   duration: 6000 },
+  { name: '🌹 red roses',  duration: 6000 },
+  { name: '🌹 purple roses', duration: 6000 },
+  { name: '🌹 blue roses', duration: 12000 },
+];
+
+let currentStage = 0;
+let stageStartTime = 0;
+let isHolding = false;
+let holdStartTime = 0;
+let stageTimer = null;
+let transitionAlpha = 0;
+
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+function resizeBg() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeBg); resizeBg();
+
+let bgParticles = [];
+for (let i = 0; i < 55; i++) {
+  bgParticles.push({
+    x: Math.random() * bgCanvas.width, y: Math.random() * bgCanvas.height,
+    r: 0.4 + Math.random() * 1.2,
+    speedX: (Math.random()-0.5)*0.18, speedY: -0.08 - Math.random()*0.18,
+    alpha: 0.08 + Math.random()*0.2, hue: 340 + Math.random()*20,
+  });
+}
+function animateBg() {
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  for (const p of bgParticles) {
+    p.x += p.speedX; p.y += p.speedY;
+    if (p.y < -5) { p.y = bgCanvas.height+5; p.x = Math.random()*bgCanvas.width; }
+    bgCtx.beginPath(); bgCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    bgCtx.fillStyle = `hsla(${p.hue},90%,60%,${p.alpha})`; bgCtx.fill();
+  }
+  requestAnimationFrame(animateBg);
+}
+animateBg();
+
+const effectCanvas = document.getElementById('effectCanvas');
+const eCtx = effectCanvas.getContext('2d');
+function resizeEffect() { effectCanvas.width = window.innerWidth; effectCanvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeEffect); resizeEffect();
+
+let particles = [];
+let transitionOverlay = 0;
+
+function makeParticle(x, y, stage) {
+  const base = {
+    x, y, alpha: 0.9,
+    decay: 0.008 + Math.random()*0.012,
+    size: 3 + Math.random()*4,
+  };
+
+  if (stage === 0) {
+    const hue = Math.random()*60 + 320;
+    return { ...base, type:'spark',
+      vx:(Math.random()-0.5)*3, vy:-1-Math.random()*2,
+      color:`hsl(${hue},90%,70%)`, size:1.5+Math.random()*3 };
+  }
+  if (stage === 1) {
+    return { ...base, type:'heart',
+      vx:(Math.random()-0.5)*2.5, vy:-0.8-Math.random()*2,
+      color:`hsl(${340+Math.random()*30},90%,${65+Math.random()*20}%)`,
+      size:6+Math.random()*8, rot:Math.random()*Math.PI*2,
+      rotSpeed:(Math.random()-0.5)*0.06 };
+  }
+  if (stage === 2) {
+    const elapsed = Date.now() - stageStartTime;
+    const intensity = Math.min(elapsed / 6000, 1);
+    const speed = 2 + intensity * 6;
+    const len = 5 + intensity * 15;
+    const size = 0.5 + intensity * 1.2;
+    const spawnRate = 0.1 + intensity * 0.5;
+    return { ...base, type:'rain',
+      vx: (Math.random()-0.5)*0.2 + intensity*1.0,
+      vy: speed + Math.random()*2,
+      color:`hsl(200,${50+intensity*30}%,${55+Math.random()*25}%)`,
+      size, len, decay: 0.012 + Math.random()*0.012,
+      spawnRate };
+  }
+  if (stage === 3) {
+    const x0 = 60 + Math.random() * (effectCanvas.width - 120);
+    const y0 = 0;
+    const x1 = x0 + (Math.random()-0.5)*120;
+    const y1 = effectCanvas.height * (0.4 + Math.random()*0.5);
+    return { ...base, type:'lightning',
+      x: x0, y: y0,
+      segments: generateLightning(x0, y0, x1, y1, 5),
+      branches: generateBranches(x0, y0, x1, y1),
+      color:`hsl(${45+Math.random()*25},100%,${85+Math.random()*15}%)`,
+      alpha: 0.9+Math.random()*0.1, decay: 0.025+Math.random()*0.025,
+      lineWidth: 2+Math.random()*2,
+      glowSize: 15+Math.random()*10 };
+  }
+  if (stage === 4) {
+    const rainbowHue = Math.random()*360;
+    return { ...base, type:'rainbow',
+      vx:(Math.random()-0.5)*1.5, vy:-0.5-Math.random()*1.5,
+      color:`hsl(${rainbowHue},90%,65%)`,
+      size:3+Math.random()*5, decay:0.005+Math.random()*0.008 };
+  }
+  if (stage === 5) {
+    const angle = Math.random()*Math.PI*2;
+    const speed = 2+Math.random()*4;
+    return { ...base, type:'sunray',
+      vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+      color:`hsl(${40+Math.random()*30},100%,${70+Math.random()*25}%)`,
+      size:2+Math.random()*4, decay:0.006+Math.random()*0.01 };
+  }
+  if (stage === 6) {
+    return { ...base, type:'feather',
+      vx:(Math.random()-0.5)*1.5, vy:-0.3-Math.random()*1.5,
+      color:`hsl(0,0%,${85+Math.random()*15}%)`,
+      size:8+Math.random()*12, rot:Math.random()*Math.PI*2,
+      rotSpeed:(Math.random()-0.5)*0.03, decay:0.004+Math.random()*0.006 };
+  }
+  if (stage === 7) {
+    return { ...base, type:'diamond',
+      vx:(Math.random()-0.5)*2, vy:-0.5-Math.random()*2.5,
+      color:`hsl(${190+Math.random()*60},80%,${75+Math.random()*20}%)`,
+      size:5+Math.random()*8, rot:Math.random()*Math.PI/4,
+      rotSpeed:(Math.random()-0.5)*0.04, decay:0.005+Math.random()*0.008 };
+  }
+  if (stage === 8) {
+    return { ...base, type:'petal',
+      vx:(Math.random()-0.5)*0.8, vy:0.15+Math.random()*0.35,
+      color:`hsl(${340+Math.random()*25},85%,${50+Math.random()*20}%)`,
+      size:7+Math.random()*10, rot:Math.random()*Math.PI*2,
+      rotSpeed:(Math.random()-0.5)*0.03, sway:Math.random()*Math.PI*2,
+      swaySpeed:0.015+Math.random()*0.015, decay:0.004+Math.random()*0.006 };
+  }
+  if (stage === 9) {
+    return { ...base, type:'petal',
+      vx:(Math.random()-0.5)*0.8, vy:0.15+Math.random()*0.35,
+      color:`hsl(${270+Math.random()*30},70%,${55+Math.random()*20}%)`,
+      size:7+Math.random()*10, rot:Math.random()*Math.PI*2,
+      rotSpeed:(Math.random()-0.5)*0.03, sway:Math.random()*Math.PI*2,
+      swaySpeed:0.015+Math.random()*0.015, decay:0.004+Math.random()*0.006 };
+  }
+  if (stage === 10) {
+    return { ...base, type:'petal',
+      vx:(Math.random()-0.5)*1.2, vy:0.5+Math.random()*1.5,
+      color:`hsl(${185+Math.random()*30},70%,${60+Math.random()*25}%)`,
+      size:7+Math.random()*10, rot:Math.random()*Math.PI*2,
+      rotSpeed:(Math.random()-0.5)*0.04, sway:Math.random()*Math.PI*2,
+      swaySpeed:0.02+Math.random()*0.02, decay:0.003+Math.random()*0.005 };
+  }
+  return { ...base, type:'spark', vx:(Math.random()-0.5)*3, vy:-1-Math.random()*2, color:'#fff' };
+}
+
+function generateLightning(x1, y1, x2, y2, depth) {
+  if (depth === undefined) depth = 5;
+  if (depth === 0) return [[x1,y1],[x2,y2]];
+  const mx = (x1+x2)/2 + (Math.random()-0.5) * Math.abs(y2-y1) * 0.4;
+  const my = (y1+y2)/2;
+  const left = generateLightning(x1, y1, mx, my, depth-1);
+  const right = generateLightning(mx, my, x2, y2, depth-1);
+  return [...left, ...right];
+}
+
+function generateBranches(x1, y1, x2, y2) {
+  const branches = [];
+  const numBranches = 2 + Math.floor(Math.random()*3);
+  for (let i = 0; i < numBranches; i++) {
+    const t = 0.2 + Math.random()*0.6;
+    const bx = x1 + (x2-x1)*t + (Math.random()-0.5)*30;
+    const by = y1 + (y2-y1)*t;
+    const ex = bx + (Math.random()-0.5)*80;
+    const ey = by + 30 + Math.random()*60;
+    branches.push(generateLightning(bx, by, ex, ey, 3));
+  }
+  return branches;
+}
+
+function drawParticle(p) {
+  eCtx.save();
+  eCtx.globalAlpha = p.alpha;
+
+  if (p.type === 'spark' || p.type === 'rainbow' || p.type === 'sunray') {
+    eCtx.beginPath();
+    eCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+    eCtx.fillStyle = p.color; eCtx.fill();
+  }
+  else if (p.type === 'lightning') {
+    eCtx.shadowBlur = p.glowSize;
+    eCtx.shadowColor = p.color;
+    eCtx.strokeStyle = p.color;
+    eCtx.lineWidth = p.lineWidth;
+    eCtx.lineCap = 'round';
+    eCtx.lineJoin = 'round';
+
+    eCtx.beginPath();
+    eCtx.moveTo(p.segments[0][0], p.segments[0][1]);
+    for (let i = 1; i < p.segments.length; i++) {
+      eCtx.lineTo(p.segments[i][0], p.segments[i][1]);
+    }
+    eCtx.stroke();
+
+    eCtx.lineWidth = p.lineWidth * 0.5;
+    eCtx.globalAlpha = p.alpha * 0.7;
+    for (const branch of p.branches) {
+      eCtx.beginPath();
+      eCtx.moveTo(branch[0][0], branch[0][1]);
+      for (let i = 1; i < branch.length; i++) {
+        eCtx.lineTo(branch[i][0], branch[i][1]);
+      }
+      eCtx.stroke();
+    }
+
+    eCtx.shadowBlur = 0;
+  }
+  else if (p.type === 'heart') {
+    eCtx.translate(p.x, p.y); eCtx.rotate(p.rot);
+    eCtx.beginPath();
+    eCtx.moveTo(0, -p.size*0.3);
+    eCtx.bezierCurveTo( p.size*0.5,-p.size*0.8,  p.size*1.0, p.size*0.1, 0, p.size*0.7);
+    eCtx.bezierCurveTo(-p.size*1.0, p.size*0.1, -p.size*0.5,-p.size*0.8, 0,-p.size*0.3);
+    eCtx.fillStyle = p.color; eCtx.fill();
+  }
+  else if (p.type === 'rain') {
+    eCtx.strokeStyle = p.color; eCtx.lineWidth = p.size;
+    eCtx.lineCap = 'round';
+    eCtx.beginPath(); eCtx.moveTo(p.x, p.y); eCtx.lineTo(p.x + p.vx*1.5, p.y - p.len);
+    eCtx.stroke();
+  }
+  else if (p.type === 'feather') {
+    eCtx.translate(p.x, p.y); eCtx.rotate(p.rot);
+    eCtx.beginPath();
+    eCtx.moveTo(0, -p.size/2);
+    eCtx.bezierCurveTo( p.size*0.4,-p.size*0.1,  p.size*0.3, p.size*0.4, 0, p.size/2);
+    eCtx.bezierCurveTo(-p.size*0.3, p.size*0.4, -p.size*0.4,-p.size*0.1, 0,-p.size/2);
+    eCtx.fillStyle = p.color; eCtx.fill();
+    eCtx.strokeStyle = 'rgba(255,255,255,0.3)'; eCtx.lineWidth = 0.5;
+    eCtx.beginPath(); eCtx.moveTo(0,-p.size/2); eCtx.lineTo(0,p.size/2); eCtx.stroke();
+  }
+  else if (p.type === 'diamond') {
+    eCtx.translate(p.x, p.y); eCtx.rotate(p.rot);
+    eCtx.beginPath();
+    eCtx.moveTo(0, -p.size); eCtx.lineTo(p.size*0.6, 0);
+    eCtx.lineTo(0, p.size*0.7); eCtx.lineTo(-p.size*0.6, 0);
+    eCtx.closePath();
+    eCtx.fillStyle = p.color; eCtx.fill();
+    eCtx.strokeStyle = 'rgba(255,255,255,0.4)'; eCtx.lineWidth = 0.5; eCtx.stroke();
+  }
+  else if (p.type === 'petal') {
+    eCtx.translate(p.x, p.y); eCtx.rotate(p.rot);
+    eCtx.beginPath();
+    eCtx.moveTo(0, -p.size/2);
+    eCtx.bezierCurveTo( p.size*0.45,-p.size*0.18,  p.size*0.38, p.size*0.38, 0, p.size/2);
+    eCtx.bezierCurveTo(-p.size*0.38, p.size*0.38, -p.size*0.45,-p.size*0.18, 0,-p.size/2);
+    eCtx.fillStyle = p.color; eCtx.fill();
+  }
+
+  eCtx.restore();
+}
+
+function spawnParticle() {
+  if (!isHolding) return;
+  const cx = effectCanvas.width / 2;
+  const cy = effectCanvas.height / 2;
+
+  let x, y;
+  if (currentStage === 2) {
+    x = Math.random() * effectCanvas.width; y = -10;
+  } else if (currentStage === 3) {
+    x = 50 + Math.random() * (effectCanvas.width - 100); y = -10;
+  } else if (currentStage === 4 || currentStage === 5) {
+    x = cx + (Math.random()-0.5)*effectCanvas.width*0.5;
+    y = cy + (Math.random()-0.5)*effectCanvas.height*0.3;
+  } else if (currentStage >= 8) {
+    x = Math.random() * effectCanvas.width; y = -15;
+  } else if (currentStage === 6) {
+    x = Math.random() * effectCanvas.width; y = -15;
+  } else {
+    x = cx + (Math.random()-0.5)*200; y = cy + (Math.random()-0.5)*200;
+  }
+
+  particles.push(makeParticle(x, y, currentStage));
+}
+
+let overlayAlpha = 0;
+let overlayFading = false;
+
+function triggerTransition(callback) {
+  overlayFading = true; overlayAlpha = 0;
+  const fadeIn = setInterval(() => {
+    overlayAlpha = Math.min(overlayAlpha + 0.06, 1);
+    if (overlayAlpha >= 1) {
+      clearInterval(fadeIn);
+      callback();
+      const fadeOut = setInterval(() => {
+        overlayAlpha = Math.max(overlayAlpha - 0.04, 0);
+        if (overlayAlpha <= 0) { clearInterval(fadeOut); overlayFading = false; }
+      }, 16);
+    }
+  }, 16);
+}
+
+function animateEffect() {
+  eCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+  particles = particles.filter(p => p.alpha > 0.01);
+  for (const p of particles) {
+    if (p.sway !== undefined) {
+      p.sway += p.swaySpeed;
+      p.x += p.vx + Math.sin(p.sway) * 0.7;
+    } else {
+      p.x += p.vx;
+    }
+    p.y += p.vy;
+    if (p.rot !== undefined) p.rot += p.rotSpeed;
+    p.alpha -= p.decay;
+
+    if (currentStage === 2) {
+      p.vy += 0.03;
+    } else if (currentStage === 8 || currentStage === 9) {
+      p.vy += 0.005;
+    } else if (currentStage === 10 || currentStage === 6) {
+      p.vy += 0.05;
+    } else {
+      p.vy += 0.02;
+    }
+    drawParticle(p);
+  }
+
+  if (overlayAlpha > 0) {
+    eCtx.fillStyle = `rgba(10,0,7,${overlayAlpha})`;
+    eCtx.fillRect(0, 0, effectCanvas.width, effectCanvas.height);
+  }
+
+  if (isHolding) {
+    if (currentStage === 2) {
+      const elapsed = Date.now() - stageStartTime;
+      const intensity = Math.min(elapsed / 6000, 1);
+      const spawnChance = 0.1 + intensity * 0.4;
+      if (Math.random() < spawnChance) spawnParticle();
+      if (intensity > 0.5 && Math.random() < (intensity - 0.5) * 0.3) spawnParticle();
+    } else if (currentStage === 3) {
+      if (Math.random() < 0.06) spawnParticle();
+    } else if (currentStage === 8 || currentStage === 9) {
+      if (Math.random() < 0.2) spawnParticle();
+    } else {
+      if (Math.random() < 0.4) spawnParticle();
+      if (Math.random() < 0.2) spawnParticle();
+    }
+  }
+
+  requestAnimationFrame(animateEffect);
+}
+animateEffect();
+
+const holdBtn = document.getElementById('holdBtn');
+const nameInput = document.getElementById('nameInput');
+const progressCircle = document.getElementById('progressCircle');
+const stageIndicator = document.getElementById('stageIndicator');
+const CIRCUMFERENCE = 302;
+
+let holdInterval = null;
+let progressVal = 0;
+
+function updateProgress(val) {
+  progressVal = val;
+  const offset = CIRCUMFERENCE - (val / 100) * CIRCUMFERENCE;
+  progressCircle.style.strokeDashoffset = offset;
+}
+
+function advanceStage() {
+  triggerTransition(() => {
+    currentStage = (currentStage + 1) % STAGES.length;
+    particles = [];
+    updateStageUI();
+  });
+}
+
+function updateStageUI() {
+  stageIndicator.textContent = `${currentStage + 1} / ${STAGES.length}  ${STAGES[currentStage].name}`;
+}
+
+function startHold() {
+  const name = nameInput.value.trim();
+  if (!name) { nameInput.focus(); return; }
+  isHolding = true;
+  holdBtn.classList.add('holding');
+  updateProgress(0);
+  stageStartTime = Date.now();
+  updateStageUI();
+
+  holdInterval = setInterval(() => {
+    const elapsed = Date.now() - stageStartTime;
+    const stageDur = STAGES[currentStage].duration;
+    const prog = Math.min((elapsed / stageDur) * 100, 100);
+    updateProgress(prog);
+
+    if (elapsed >= stageDur) {
+      stageStartTime = Date.now();
+      advanceStage();
+    }
+  }, 50);
+}
+
+function endHold() {
+  isHolding = false;
+  holdBtn.classList.remove('holding');
+  clearInterval(holdInterval);
+  updateProgress(0);
+}
+
+holdBtn.addEventListener('mousedown', startHold);
+holdBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startHold(); }, { passive: false });
+holdBtn.addEventListener('mouseup', endHold);
+holdBtn.addEventListener('mouseleave', endHold);
+holdBtn.addEventListener('touchend', endHold);
+holdBtn.addEventListener('touchcancel', endHold);
+
+nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') nameInput.blur(); });
+
+const secretMessages = [
+  'that name lives\nonly inside you',
+  'you don\'t have to tell anyone\njust feel it',
+  'this rush\nbelongs to you alone',
+  'every time you say that name\nthe world shifts a little',
+  'it\'s okay\nto fall into the sweet trap',
+  'your secret\ndisappeared here',
+];
+
+nameInput.addEventListener('blur', () => {
+  const name = nameInput.value.trim();
+  if (!name) return;
+  showSecretMsg();
+});
+
+function showSecretMsg() {
+  const el = document.getElementById('secret');
+  const text = document.getElementById('secretText');
+  const msg = secretMessages[Math.floor(Math.random()*secretMessages.length)];
+
+  el.classList.add('show');
+  text.innerHTML = '';
+
+  const chars = msg.split('');
+  let i = 0;
+  const timer = setInterval(() => {
+    if (i >= chars.length) { clearInterval(timer); return; }
+    if (chars[i] === '\n') {
+      text.innerHTML += '<br>';
+    } else {
+      const span = document.createElement('span');
+      span.textContent = chars[i];
+      span.style.cssText = 'opacity:0;transition:opacity 0.4s ease;display:inline-block';
+      text.appendChild(span);
+      setTimeout(() => { span.style.opacity = '1'; }, 30);
+    }
+    i++;
+  }, 100);
+
+  setTimeout(() => { el.classList.remove('show'); }, 4500);
+}
+
+updateStageUI();
+</script>
+</body>
+</html>

@@ -140,7 +140,7 @@
   #effectCanvas { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
   #secret {
     position: fixed; inset: 0; z-index: 30;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: flex-end; justify-content: center;
     padding-bottom: 120px;
     pointer-events: none; opacity: 0; transition: opacity 1.2s ease;
   }
@@ -696,8 +696,7 @@ function showSecretMsg() {
       setTimeout(() => { span.style.opacity = '1'; }, 30);
     }
     i++;
-  }, 100);
-
+  }, 300);
   setTimeout(() => { el.classList.remove('show'); }, 14000);
 }
 

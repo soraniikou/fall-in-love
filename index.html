@@ -48,15 +48,15 @@
   #nameInput {
     width: 100%;
     background: transparent; border: none;
-    border-bottom: 1px solid rgba(200, 4, 60, 0.4);
-    color: rgba(247, 197, 213, 0.9);
+    border-bottom: 1px solid rgba(200, 80, 120, 0.8);
+    color: rgba(255, 220, 235, 1);
     font-family: 'Shippori Mincho', serif;
     font-size: 28px; letter-spacing: 0.18em;
     text-align: center; padding: 12px 0;
     outline: none; caret-color: var(--crimson);
     transition: border-color 0.4s;
   }
-  #nameInput::placeholder { color: rgba(200, 4, 60, 0.25); font-size: 16px; letter-spacing: 0.3em; }
+  #nameInput::placeholder { color: rgba(220, 100, 140, 0.6); font-size: 16px; letter-spacing: 0.3em; }
   #nameInput:focus { border-bottom-color: rgba(200, 4, 60, 0.8); }
   #inputLine {
     position: absolute; bottom: 0; left: 50%;
@@ -72,7 +72,7 @@
   }
   #holdGuideText {
     font-size: 10px; letter-spacing: 0.28em;
-    color: rgba(200, 4, 60, 0.5);
+    color: rgba(230, 120, 150, 0.85);
   }
   #holdGuideArrow {
     font-size: 16px;
@@ -141,6 +141,7 @@
   #secret {
     position: fixed; inset: 0; z-index: 30;
     display: flex; align-items: center; justify-content: center;
+    padding-bottom: 120px;
     pointer-events: none; opacity: 0; transition: opacity 1.2s ease;
   }
   #secret.show { opacity: 1; }
